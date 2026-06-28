@@ -1,0 +1,984 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>验血报告记录器</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f8fb;
+      --panel: #ffffff;
+      --ink: #111827;
+      --muted: #667085;
+      --line: #d7dde7;
+      --soft: #eef2f7;
+      --blue: #1556b0;
+      --blue-soft: #e4f0ff;
+      --green: #087443;
+      --green-soft: #dff7eb;
+      --red: #bd1f1f;
+      --red-soft: #ffe7e7;
+      --amber: #a15c07;
+      --amber-soft: #fff0cb;
+      --violet: #6045aa;
+      --violet-soft: #eee8ff;
+      --shadow: 0 14px 30px rgba(15, 23, 42, 0.08);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-size: 14px;
+      letter-spacing: 0;
+    }
+
+    button, input, textarea, select {
+      font: inherit;
+    }
+
+    button {
+      border: 1px solid transparent;
+      border-radius: 6px;
+      cursor: pointer;
+      min-height: 40px;
+      padding: 0 14px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+
+    button.primary { background: var(--blue); color: white; }
+    button.secondary { background: var(--soft); color: var(--ink); border-color: var(--line); }
+    button.danger { background: var(--red-soft); color: var(--red); border-color: #ffc5c5; }
+    button.ghost { background: transparent; color: var(--muted); border-color: var(--line); }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .app {
+      max-width: 1420px;
+      margin: 0 auto;
+      padding: 28px 28px 40px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      margin-bottom: 22px;
+    }
+
+    .brand { flex: 1; min-width: 220px; }
+    h1 { margin: 0; font-size: 25px; line-height: 1.25; }
+    .sub { margin: 5px 0 0; color: var(--muted); line-height: 1.5; }
+
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: minmax(520px, 1fr) minmax(440px, 0.96fr);
+      gap: 20px;
+      align-items: start;
+    }
+
+    .stack { display: grid; gap: 20px; }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      padding: 18px;
+      min-width: 0;
+    }
+
+    .panel-head {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 17px;
+      line-height: 1.35;
+      flex: 1;
+    }
+
+    .chip {
+      border-radius: 999px;
+      padding: 5px 10px;
+      font-size: 12px;
+      font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .chip.info { background: var(--blue-soft); color: var(--blue); }
+    .chip.good { background: var(--green-soft); color: var(--green); }
+    .chip.bad { background: var(--red-soft); color: var(--red); }
+    .chip.warn { background: var(--amber-soft); color: var(--amber); }
+    .chip.neutral { background: var(--soft); color: var(--muted); }
+
+    textarea {
+      width: 100%;
+      min-height: 218px;
+      resize: vertical;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfdff;
+      padding: 14px;
+      color: var(--ink);
+      line-height: 1.55;
+      outline: none;
+    }
+
+    textarea:focus, input:focus, select:focus {
+      border-color: #8bb8ff;
+      box-shadow: 0 0 0 3px rgba(21, 86, 176, 0.12);
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    label {
+      display: grid;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    input, select {
+      min-width: 0;
+      min-height: 40px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: white;
+      color: var(--ink);
+      padding: 0 10px;
+    }
+
+    .actions {
+      margin-top: 12px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .message {
+      margin-left: auto;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    .table-wrap {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: auto;
+      background: white;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 720px;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 11px 12px;
+      border-bottom: 1px solid var(--line);
+      vertical-align: middle;
+      line-height: 1.35;
+    }
+
+    th {
+      background: var(--soft);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    tr:last-child td { border-bottom: 0; }
+
+    .metric-name { font-weight: 800; color: var(--ink); }
+    .muted { color: var(--muted); }
+    .mono { font-variant-numeric: tabular-nums; }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .stat {
+      border-radius: 8px;
+      padding: 14px;
+      min-height: 78px;
+      display: grid;
+      align-content: center;
+      gap: 3px;
+    }
+
+    .stat strong {
+      font-size: 25px;
+      line-height: 1;
+    }
+
+    .stat span {
+      color: var(--muted);
+      font-weight: 700;
+      font-size: 12px;
+    }
+
+    .stat.info { background: var(--blue-soft); color: var(--blue); }
+    .stat.bad { background: var(--red-soft); color: var(--red); }
+    .stat.good { background: var(--green-soft); color: var(--green); }
+    .stat.violet { background: var(--violet-soft); color: var(--violet); }
+
+    .report-list, .abnormal-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .report-item, .abnormal-item {
+      border-radius: 8px;
+      background: #fbfdff;
+      border: 1px solid var(--line);
+      padding: 12px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      min-width: 0;
+    }
+
+    .report-item.active { background: var(--blue-soft); border-color: #b6d5ff; }
+    .item-main { flex: 1; min-width: 0; }
+    .item-title { font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .item-sub { color: var(--muted); margin-top: 3px; font-size: 12px; line-height: 1.35; }
+
+    .filters {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 150px 150px;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .empty {
+      color: var(--muted);
+      background: #fbfdff;
+      border: 1px dashed #c6ceda;
+      border-radius: 8px;
+      padding: 20px;
+      text-align: center;
+      line-height: 1.6;
+    }
+
+    .chart-box {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfdff;
+      padding: 14px;
+      min-height: 210px;
+    }
+
+    .chart-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .chart-title strong { flex: 1; }
+
+    svg {
+      width: 100%;
+      height: 150px;
+      display: block;
+    }
+
+    .backup-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .file-input { display: none; }
+
+    .sample {
+      background: #111827;
+      color: #eaf1ff;
+      border-radius: 8px;
+      padding: 14px;
+      overflow: auto;
+      line-height: 1.55;
+      font-size: 13px;
+      white-space: pre-wrap;
+    }
+
+    @media (max-width: 980px) {
+      .app { padding: 20px 16px 30px; }
+      .topbar { align-items: flex-start; flex-direction: column; }
+      .grid { grid-template-columns: 1fr; }
+      .form-row, .filters { grid-template-columns: 1fr; }
+      .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .message { margin-left: 0; width: 100%; }
+    }
+
+    @media (max-width: 520px) {
+      h1 { font-size: 22px; }
+      .panel { padding: 14px; }
+      .stats { grid-template-columns: 1fr; }
+      .toolbar, .actions, .backup-row { width: 100%; }
+      button { flex: 1; }
+      .report-item, .abnormal-item { align-items: flex-start; flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div class="brand">
+        <h1>验血报告记录器</h1>
+        <p class="sub">复制 GPT 整理好的文本，粘贴、预览、保存。数据默认只存在当前浏览器里。</p>
+      </div>
+      <div class="toolbar">
+        <button class="secondary" id="fillSampleBtn" type="button">填入示例</button>
+        <button class="secondary" id="exportBtn" type="button">导出备份</button>
+        <button class="secondary" id="importBtn" type="button">导入备份</button>
+        <input class="file-input" id="importFile" type="file" accept="application/json,.json" />
+      </div>
+    </header>
+
+    <section class="grid">
+      <div class="stack">
+        <section class="panel">
+          <div class="panel-head">
+            <h2>1. 粘贴本次报告</h2>
+            <span class="chip info">固定格式</span>
+          </div>
+          <div class="form-row">
+            <label>日期
+              <input id="dateInput" type="date" />
+            </label>
+            <label>医院/机构
+              <input id="hospitalInput" type="text" placeholder="未提供" />
+            </label>
+            <label>报告类型
+              <input id="typeInput" type="text" placeholder="血常规 / 肝功能" />
+            </label>
+          </div>
+          <textarea id="pasteInput" spellcheck="false" placeholder="把 GPT 整理好的报告文本粘贴到这里"></textarea>
+          <div class="actions">
+            <button class="primary" id="parseBtn" type="button">解析预览</button>
+            <button class="secondary" id="clearBtn" type="button">清空</button>
+            <span class="message" id="parseMessage">等待粘贴内容</span>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <h2>2. 解析预览</h2>
+            <span class="chip neutral" id="previewCount">0 项</span>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>日期</th>
+                  <th>项目</th>
+                  <th>结果</th>
+                  <th>单位</th>
+                  <th>参考范围</th>
+                  <th>状态</th>
+                  <th>备注</th>
+                </tr>
+              </thead>
+              <tbody id="previewBody"></tbody>
+            </table>
+          </div>
+          <div class="actions">
+            <button class="primary" id="saveBtn" type="button" disabled>保存本次报告</button>
+            <span class="message" id="saveMessage">先解析，再保存</span>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <h2>给 GPT 的格式</h2>
+          </div>
+          <div class="sample">请把这份验血报告整理成下面格式，不要解释：
+
+日期：2026-06-28
+医院：XX医院
+报告类型：血常规 + 肝功能
+
+项目：
+白细胞 WBC｜5.6｜10^9/L｜3.5-9.5｜正常｜
+谷丙转氨酶 ALT｜42｜U/L｜0-40｜偏高｜轻度升高</div>
+        </section>
+      </div>
+
+      <div class="stack">
+        <section class="panel">
+          <div class="panel-head">
+            <h2>总览</h2>
+          </div>
+          <div class="stats">
+            <div class="stat info"><strong id="reportTotal">0</strong><span>报告</span></div>
+            <div class="stat bad"><strong id="abnormalTotal">0</strong><span>异常项</span></div>
+            <div class="stat violet"><strong id="metricTotal">0</strong><span>指标种类</span></div>
+            <div class="stat good"><strong id="latestDate">无</strong><span>最近日期</span></div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <h2>记录查询</h2>
+          </div>
+          <div class="filters">
+            <input id="searchInput" type="search" placeholder="搜索项目、缩写、医院" />
+            <select id="statusFilter">
+              <option value="all">全部状态</option>
+              <option value="abnormal">只看异常</option>
+              <option value="正常">正常</option>
+              <option value="偏高">偏高</option>
+              <option value="偏低">偏低</option>
+              <option value="阳性">阳性</option>
+              <option value="阴性">阴性</option>
+              <option value="异常">异常</option>
+            </select>
+            <select id="metricSelect">
+              <option value="">选择趋势指标</option>
+            </select>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>日期</th>
+                  <th>项目</th>
+                  <th>结果</th>
+                  <th>单位</th>
+                  <th>状态</th>
+                  <th>报告</th>
+                </tr>
+              </thead>
+              <tbody id="recordsBody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <h2>趋势</h2>
+            <span class="chip info" id="trendChip">未选择</span>
+          </div>
+          <div class="chart-box" id="chartBox"></div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <h2>最近报告</h2>
+          </div>
+          <div class="report-list" id="reportList"></div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <h2>异常记录</h2>
+          </div>
+          <div class="abnormal-list" id="abnormalList"></div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <h2>备份</h2>
+          </div>
+          <div class="backup-row">
+            <button class="secondary" id="exportCsvBtn" type="button">导出 CSV</button>
+            <button class="danger" id="wipeBtn" type="button">清空全部数据</button>
+          </div>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const STORE_KEY = "blood-test-tracker:v1";
+    const state = {
+      reports: [],
+      preview: [],
+      parsedMeta: {}
+    };
+
+    const $ = (id) => document.getElementById(id);
+    const today = new Date().toISOString().slice(0, 10);
+
+    const sampleText = `日期：2026-06-28
+医院：XX医院
+报告类型：血常规 + 肝功能
+
+项目：
+白细胞 WBC｜5.6｜10^9/L｜3.5-9.5｜正常｜
+红细胞 RBC｜4.8｜10^12/L｜4.3-5.8｜正常｜
+谷丙转氨酶 ALT｜42｜U/L｜0-40｜偏高｜轻度升高
+低密度脂蛋白 LDL-C｜3.6｜mmol/L｜<3.4｜偏高｜`;
+
+    function escapeHtml(value) {
+      return String(value ?? "").replace(/[&<>"']/g, (m) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
+      }[m]));
+    }
+
+    function normalizeStatus(value) {
+      const text = String(value || "").trim();
+      if (!text) return "未提供";
+      if (/偏高|升高|高/.test(text)) return "偏高";
+      if (/偏低|降低|低/.test(text)) return "偏低";
+      if (/阳性|\+/.test(text)) return "阳性";
+      if (/阴性|\-/.test(text)) return "阴性";
+      if (/异常|不正常/.test(text)) return "异常";
+      if (/正常|阴性/.test(text)) return "正常";
+      return text;
+    }
+
+    function statusClass(status) {
+      if (status === "正常" || status === "阴性") return "good";
+      if (status === "偏高" || status === "偏低" || status === "阳性" || status === "异常") return "bad";
+      if (status === "未提供") return "neutral";
+      return "warn";
+    }
+
+    function isAbnormal(status) {
+      return ["偏高", "偏低", "阳性", "异常"].includes(status);
+    }
+
+    function parseMeta(text) {
+      const get = (label) => {
+        const match = text.match(new RegExp("(?:" + label + ")[：:]\\s*([^\\n\\r]+)"));
+        return match ? match[1].trim() : "";
+      };
+      return {
+        date: get("日期"),
+        hospital: get("医院|医院/机构|机构"),
+        reportType: get("报告类型|类型")
+      };
+    }
+
+    function splitLine(line) {
+      return line
+        .replace(/\t/g, "｜")
+        .split(/[｜|]/)
+        .map((part) => part.trim());
+    }
+
+    function parseMetricName(raw) {
+      const value = String(raw || "").trim();
+      const match = value.match(/^(.+?)\s+([A-Za-z][A-Za-z0-9\-\/]*)$/);
+      if (!match) return { name: value, code: "" };
+      return { name: match[1].trim(), code: match[2].trim() };
+    }
+
+    function parseReportText(text) {
+      const meta = parseMeta(text);
+      const fallbackDate = $("dateInput").value || meta.date || today;
+      const fallbackHospital = $("hospitalInput").value.trim() || meta.hospital || "未提供";
+      const fallbackType = $("typeInput").value.trim() || meta.reportType || "未提供";
+      const rows = [];
+      const lines = text.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+
+      for (const line of lines) {
+        if (/^(日期|医院|医院\/机构|机构|报告类型|类型|项目)[:：]?$/.test(line)) continue;
+        if (/^(日期|医院|医院\/机构|机构|报告类型|类型)[:：]/.test(line)) continue;
+
+        const parts = splitLine(line);
+        if (parts.length < 3) continue;
+
+        let date = fallbackDate;
+        let hospital = fallbackHospital;
+        let reportType = fallbackType;
+        let nameRaw = parts[0];
+        let result = parts[1] || "";
+        let unit = parts[2] || "";
+        let reference = parts[3] || "";
+        let status = parts[4] || "";
+        let note = parts.slice(5).join("；");
+
+        if (/^\d{4}-\d{1,2}-\d{1,2}$/.test(parts[0]) && parts.length >= 7) {
+          date = parts[0];
+          nameRaw = parts[1];
+          result = parts[2] || "";
+          unit = parts[3] || "";
+          reference = parts[4] || "";
+          status = parts[5] || "";
+          note = parts.slice(6).join("；");
+        }
+
+        const parsedName = parseMetricName(nameRaw);
+        rows.push({
+          id: crypto.randomUUID(),
+          date,
+          hospital,
+          reportType,
+          category: reportType,
+          name: parsedName.name || nameRaw,
+          code: parsedName.code,
+          result,
+          unit,
+          reference,
+          status: normalizeStatus(status),
+          note
+        });
+      }
+
+      return { meta, rows };
+    }
+
+    function saveStore() {
+      localStorage.setItem(STORE_KEY, JSON.stringify({ reports: state.reports }));
+    }
+
+    function loadStore() {
+      try {
+        const raw = localStorage.getItem(STORE_KEY);
+        if (!raw) return;
+        const data = JSON.parse(raw);
+        state.reports = Array.isArray(data.reports) ? data.reports : [];
+      } catch {
+        state.reports = [];
+      }
+    }
+
+    function allItems() {
+      return state.reports.flatMap((report) => report.items.map((item) => ({ ...item, reportId: report.id })));
+    }
+
+    function renderPreview() {
+      $("previewCount").textContent = `${state.preview.length} 项`;
+      $("saveBtn").disabled = state.preview.length === 0;
+      $("previewBody").innerHTML = state.preview.map((item) => `
+        <tr>
+          <td class="mono">${escapeHtml(item.date)}</td>
+          <td><span class="metric-name">${escapeHtml(item.name)}</span> <span class="muted">${escapeHtml(item.code)}</span></td>
+          <td class="mono">${escapeHtml(item.result)}</td>
+          <td>${escapeHtml(item.unit)}</td>
+          <td>${escapeHtml(item.reference)}</td>
+          <td><span class="chip ${statusClass(item.status)}">${escapeHtml(item.status)}</span></td>
+          <td>${escapeHtml(item.note)}</td>
+        </tr>
+      `).join("");
+    }
+
+    function renderStats() {
+      const items = allItems();
+      const metrics = new Set(items.map((item) => item.code || item.name));
+      const dates = state.reports.map((report) => report.date).filter(Boolean).sort();
+      $("reportTotal").textContent = state.reports.length;
+      $("abnormalTotal").textContent = items.filter((item) => isAbnormal(item.status)).length;
+      $("metricTotal").textContent = metrics.size;
+      $("latestDate").textContent = dates.length ? dates[dates.length - 1].slice(5) : "无";
+    }
+
+    function renderReports() {
+      const list = [...state.reports].sort((a, b) => String(b.date).localeCompare(String(a.date)));
+      $("reportList").innerHTML = list.length ? list.slice(0, 8).map((report, index) => {
+        const abnormalCount = report.items.filter((item) => isAbnormal(item.status)).length;
+        return `
+          <article class="report-item ${index === 0 ? "active" : ""}">
+            <div class="item-main">
+              <div class="item-title">${escapeHtml(report.date)}｜${escapeHtml(report.reportType)}</div>
+              <div class="item-sub">${escapeHtml(report.hospital)}｜${report.items.length} 项｜${abnormalCount ? abnormalCount + " 项异常" : "全部正常"}</div>
+            </div>
+            <button class="ghost" type="button" data-delete-report="${escapeHtml(report.id)}">删除</button>
+          </article>
+        `;
+      }).join("") : `<div class="empty">还没有保存报告</div>`;
+    }
+
+    function renderRecords() {
+      const query = $("searchInput").value.trim().toLowerCase();
+      const status = $("statusFilter").value;
+      let items = allItems();
+
+      if (query) {
+        items = items.filter((item) => [item.name, item.code, item.hospital, item.reportType, item.note]
+          .join(" ").toLowerCase().includes(query));
+      }
+
+      if (status === "abnormal") {
+        items = items.filter((item) => isAbnormal(item.status));
+      } else if (status !== "all") {
+        items = items.filter((item) => item.status === status);
+      }
+
+      items.sort((a, b) => String(b.date).localeCompare(String(a.date)));
+      $("recordsBody").innerHTML = items.length ? items.map((item) => `
+        <tr>
+          <td class="mono">${escapeHtml(item.date)}</td>
+          <td><span class="metric-name">${escapeHtml(item.name)}</span> <span class="muted">${escapeHtml(item.code)}</span></td>
+          <td class="mono">${escapeHtml(item.result)}</td>
+          <td>${escapeHtml(item.unit)}</td>
+          <td><span class="chip ${statusClass(item.status)}">${escapeHtml(item.status)}</span></td>
+          <td>${escapeHtml(item.reportType)}</td>
+        </tr>
+      `).join("") : `<tr><td colspan="6"><div class="empty">没有匹配记录</div></td></tr>`;
+    }
+
+    function renderAbnormal() {
+      const abnormal = allItems()
+        .filter((item) => isAbnormal(item.status))
+        .sort((a, b) => String(b.date).localeCompare(String(a.date)))
+        .slice(0, 8);
+
+      $("abnormalList").innerHTML = abnormal.length ? abnormal.map((item) => `
+        <article class="abnormal-item">
+          <div class="item-main">
+            <div class="item-title">${escapeHtml(item.name)} ${escapeHtml(item.code)}</div>
+            <div class="item-sub">${escapeHtml(item.date)}｜${escapeHtml(item.result)} ${escapeHtml(item.unit)}｜参考 ${escapeHtml(item.reference || "未提供")}</div>
+          </div>
+          <span class="chip ${statusClass(item.status)}">${escapeHtml(item.status)}</span>
+        </article>
+      `).join("") : `<div class="empty">暂无异常记录</div>`;
+    }
+
+    function renderMetricOptions() {
+      const current = $("metricSelect").value;
+      const map = new Map();
+      allItems().forEach((item) => {
+        const key = item.code || item.name;
+        if (!map.has(key)) map.set(key, `${item.name}${item.code ? " " + item.code : ""}`);
+      });
+      $("metricSelect").innerHTML = `<option value="">选择趋势指标</option>` + [...map.entries()]
+        .sort((a, b) => a[1].localeCompare(b[1], "zh-CN"))
+        .map(([key, label]) => `<option value="${escapeHtml(key)}">${escapeHtml(label)}</option>`)
+        .join("");
+      if (map.has(current)) $("metricSelect").value = current;
+    }
+
+    function numericResult(value) {
+      const match = String(value || "").replace(",", ".").match(/-?\d+(\.\d+)?/);
+      return match ? Number(match[0]) : null;
+    }
+
+    function renderChart() {
+      const metric = $("metricSelect").value;
+      const box = $("chartBox");
+      if (!metric) {
+        $("trendChip").textContent = "未选择";
+        box.innerHTML = `<div class="empty">在上方选择一个指标后，这里会显示历史趋势</div>`;
+        return;
+      }
+
+      const points = allItems()
+        .filter((item) => (item.code || item.name) === metric)
+        .map((item) => ({ ...item, numeric: numericResult(item.result) }))
+        .filter((item) => item.numeric !== null)
+        .sort((a, b) => String(a.date).localeCompare(String(b.date)));
+
+      $("trendChip").textContent = metric;
+      if (points.length < 2) {
+        box.innerHTML = `<div class="empty">这个指标至少需要两次记录才适合看趋势</div>`;
+        return;
+      }
+
+      const min = Math.min(...points.map((p) => p.numeric));
+      const max = Math.max(...points.map((p) => p.numeric));
+      const range = max === min ? 1 : max - min;
+      const width = 620;
+      const height = 150;
+      const pad = 26;
+      const coords = points.map((p, i) => {
+        const x = pad + (i * (width - pad * 2)) / Math.max(points.length - 1, 1);
+        const y = height - pad - ((p.numeric - min) / range) * (height - pad * 2);
+        return { ...p, x, y };
+      });
+      const polyline = coords.map((p) => `${p.x},${p.y}`).join(" ");
+
+      box.innerHTML = `
+        <div class="chart-title">
+          <strong>${escapeHtml(points[0].name)} ${escapeHtml(points[0].code)}</strong>
+          <span class="muted">${escapeHtml(points[0].unit || "")}</span>
+        </div>
+        <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="趋势图">
+          <line x1="${pad}" y1="${height - pad}" x2="${width - pad}" y2="${height - pad}" stroke="#d7dde7" />
+          <line x1="${pad}" y1="${pad}" x2="${pad}" y2="${height - pad}" stroke="#d7dde7" />
+          <polyline points="${polyline}" fill="none" stroke="#bd1f1f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+          ${coords.map((p) => `<circle cx="${p.x}" cy="${p.y}" r="5" fill="#bd1f1f"><title>${escapeHtml(p.date)} ${escapeHtml(p.result)}</title></circle>`).join("")}
+          <text x="${pad}" y="18" fill="#667085" font-size="12">${max}</text>
+          <text x="${pad}" y="${height - 8}" fill="#667085" font-size="12">${min}</text>
+        </svg>
+        <div class="muted">${escapeHtml(coords.map((p) => `${p.date.slice(5)}：${p.result}`).join(" → "))}</div>
+      `;
+    }
+
+    function renderAll() {
+      renderPreview();
+      renderStats();
+      renderReports();
+      renderMetricOptions();
+      renderRecords();
+      renderAbnormal();
+      renderChart();
+    }
+
+    function parseNow() {
+      const text = $("pasteInput").value.trim();
+      if (!text) {
+        state.preview = [];
+        $("parseMessage").textContent = "等待粘贴内容";
+        renderPreview();
+        return;
+      }
+      const parsed = parseReportText(text);
+      state.parsedMeta = parsed.meta;
+      state.preview = parsed.rows;
+      if (parsed.meta.date && !$("dateInput").value) $("dateInput").value = parsed.meta.date;
+      if (parsed.meta.hospital && !$("hospitalInput").value) $("hospitalInput").value = parsed.meta.hospital;
+      if (parsed.meta.reportType && !$("typeInput").value) $("typeInput").value = parsed.meta.reportType;
+      $("parseMessage").textContent = parsed.rows.length ? `已识别 ${parsed.rows.length} 个指标` : "没有识别到指标";
+      $("saveMessage").textContent = parsed.rows.length ? "确认无误后保存" : "先解析，再保存";
+      renderPreview();
+    }
+
+    function savePreview() {
+      if (!state.preview.length) return;
+      const date = $("dateInput").value || state.preview[0].date || today;
+      const hospital = $("hospitalInput").value.trim() || state.preview[0].hospital || "未提供";
+      const reportType = $("typeInput").value.trim() || state.preview[0].reportType || "未提供";
+      const report = {
+        id: crypto.randomUUID(),
+        date,
+        hospital,
+        reportType,
+        createdAt: new Date().toISOString(),
+        rawText: $("pasteInput").value,
+        items: state.preview.map((item) => ({ ...item, date, hospital, reportType, category: reportType }))
+      };
+      state.reports.push(report);
+      state.preview = [];
+      $("pasteInput").value = "";
+      $("saveMessage").textContent = "已保存";
+      $("parseMessage").textContent = "等待粘贴内容";
+      saveStore();
+      renderAll();
+    }
+
+    function exportJson() {
+      const payload = JSON.stringify({ app: "blood-test-tracker", version: 1, exportedAt: new Date().toISOString(), reports: state.reports }, null, 2);
+      downloadFile(`blood-test-tracker-backup-${today}.json`, payload, "application/json");
+    }
+
+    function exportCsv() {
+      const headers = ["日期", "医院/机构", "报告类型", "项目名称", "英文缩写", "结果", "单位", "参考范围", "状态", "备注"];
+      const rows = allItems().map((item) => [item.date, item.hospital, item.reportType, item.name, item.code, item.result, item.unit, item.reference, item.status, item.note]);
+      const csv = [headers, ...rows].map((row) => row.map((cell) => `"${String(cell ?? "").replace(/"/g, '""')}"`).join(",")).join("\n");
+      downloadFile(`blood-test-tracker-${today}.csv`, "\ufeff" + csv, "text/csv;charset=utf-8");
+    }
+
+    function downloadFile(filename, content, type) {
+      const blob = new Blob([content], { type });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function importJson(file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const data = JSON.parse(String(reader.result || ""));
+          if (!Array.isArray(data.reports)) throw new Error("Invalid backup");
+          state.reports = data.reports;
+          saveStore();
+          renderAll();
+          $("saveMessage").textContent = "备份已导入";
+        } catch {
+          $("saveMessage").textContent = "导入失败，文件格式不对";
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    document.addEventListener("click", (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) return;
+      const reportId = target.dataset.deleteReport;
+      if (reportId && confirm("确定删除这份报告吗？")) {
+        state.reports = state.reports.filter((report) => report.id !== reportId);
+        saveStore();
+        renderAll();
+      }
+    });
+
+    $("dateInput").value = today;
+    $("parseBtn").addEventListener("click", parseNow);
+    $("clearBtn").addEventListener("click", () => {
+      $("pasteInput").value = "";
+      state.preview = [];
+      $("parseMessage").textContent = "等待粘贴内容";
+      $("saveMessage").textContent = "先解析，再保存";
+      renderPreview();
+    });
+    $("saveBtn").addEventListener("click", savePreview);
+    $("fillSampleBtn").addEventListener("click", () => {
+      $("pasteInput").value = sampleText;
+      $("dateInput").value = "2026-06-28";
+      $("hospitalInput").value = "XX医院";
+      $("typeInput").value = "血常规 + 肝功能";
+      parseNow();
+    });
+    $("exportBtn").addEventListener("click", exportJson);
+    $("exportCsvBtn").addEventListener("click", exportCsv);
+    $("importBtn").addEventListener("click", () => $("importFile").click());
+    $("importFile").addEventListener("change", (event) => {
+      const file = event.target.files && event.target.files[0];
+      if (file) importJson(file);
+      event.target.value = "";
+    });
+    $("wipeBtn").addEventListener("click", () => {
+      if (!state.reports.length) return;
+      if (confirm("确定清空全部数据吗？建议先导出备份。")) {
+        state.reports = [];
+        saveStore();
+        renderAll();
+      }
+    });
+    $("searchInput").addEventListener("input", renderRecords);
+    $("statusFilter").addEventListener("change", renderRecords);
+    $("metricSelect").addEventListener("change", renderChart);
+
+    loadStore();
+    renderAll();
+  </script>
+</body>
+</html>
