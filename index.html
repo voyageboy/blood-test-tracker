@@ -6,24 +6,26 @@
   <title>验血报告记录器</title>
   <style>
     :root {
-      color-scheme: light;
-      --bg: #f6f8fb;
-      --panel: #ffffff;
-      --ink: #111827;
-      --muted: #667085;
-      --line: #d7dde7;
-      --soft: #eef2f7;
-      --blue: #1556b0;
-      --blue-soft: #e4f0ff;
-      --green: #087443;
-      --green-soft: #dff7eb;
-      --red: #bd1f1f;
-      --red-soft: #ffe7e7;
-      --amber: #a15c07;
-      --amber-soft: #fff0cb;
-      --violet: #6045aa;
-      --violet-soft: #eee8ff;
-      --shadow: 0 14px 30px rgba(15, 23, 42, 0.08);
+      color-scheme: dark;
+      --bg: #0b1020;
+      --panel: #121a2b;
+      --panel-2: #162238;
+      --ink: #eef4ff;
+      --muted: #97a6bd;
+      --line: #27344e;
+      --soft: #1c2940;
+      --blue: #8bbcff;
+      --blue-strong: #2e75d4;
+      --blue-soft: #132d54;
+      --green: #78d9a3;
+      --green-soft: #123626;
+      --red: #ff8b8b;
+      --red-soft: #431b21;
+      --amber: #ffd27a;
+      --amber-soft: #3d2e15;
+      --violet: #b9a3ff;
+      --violet-soft: #2a2452;
+      --shadow: 0 16px 38px rgba(0, 0, 0, 0.28);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
     }
 
@@ -55,7 +57,7 @@
       white-space: nowrap;
     }
 
-    button.primary { background: var(--blue); color: white; }
+    button.primary { background: var(--blue-strong); color: white; }
     button.secondary { background: var(--soft); color: var(--ink); border-color: var(--line); }
     button.danger { background: var(--red-soft); color: var(--red); border-color: #ffc5c5; }
     button.ghost { background: transparent; color: var(--muted); border-color: var(--line); }
@@ -140,7 +142,7 @@
       resize: vertical;
       border: 1px solid var(--line);
       border-radius: 8px;
-      background: #fbfdff;
+      background: var(--panel-2);
       padding: 14px;
       color: var(--ink);
       line-height: 1.55;
@@ -172,7 +174,7 @@
       min-height: 40px;
       border: 1px solid var(--line);
       border-radius: 6px;
-      background: white;
+      background: var(--panel-2);
       color: var(--ink);
       padding: 0 10px;
     }
@@ -195,7 +197,7 @@
       border: 1px solid var(--line);
       border-radius: 8px;
       overflow: auto;
-      background: white;
+      background: var(--panel-2);
     }
 
     table {
@@ -266,7 +268,7 @@
 
     .report-item, .abnormal-item {
       border-radius: 8px;
-      background: #fbfdff;
+      background: var(--panel-2);
       border: 1px solid var(--line);
       padding: 12px;
       display: flex;
@@ -275,7 +277,16 @@
       min-width: 0;
     }
 
-    .report-item.active { background: var(--blue-soft); border-color: #b6d5ff; }
+    .report-item {
+      width: 100%;
+      color: var(--ink);
+      cursor: pointer;
+      text-align: left;
+      min-height: 68px;
+    }
+
+    .report-item:hover { border-color: #456188; background: #1a2740; }
+    .report-item.active { background: var(--blue-soft); border-color: #4b8fe9; }
     .item-main { flex: 1; min-width: 0; }
     .item-title { font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .item-sub { color: var(--muted); margin-top: 3px; font-size: 12px; line-height: 1.35; }
@@ -289,8 +300,8 @@
 
     .empty {
       color: var(--muted);
-      background: #fbfdff;
-      border: 1px dashed #c6ceda;
+      background: var(--panel-2);
+      border: 1px dashed #40516f;
       border-radius: 8px;
       padding: 20px;
       text-align: center;
@@ -300,7 +311,7 @@
     .chart-box {
       border: 1px solid var(--line);
       border-radius: 8px;
-      background: #fbfdff;
+      background: var(--panel-2);
       padding: 14px;
       min-height: 210px;
     }
@@ -329,6 +340,44 @@
 
     .file-input { display: none; }
 
+    .report-list {
+      max-height: 360px;
+      overflow: auto;
+      padding-right: 4px;
+    }
+
+    .selected-summary {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .selected-card {
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      min-width: 0;
+    }
+
+    .selected-card strong {
+      display: block;
+      color: var(--ink);
+      font-size: 14px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .selected-card span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      margin-top: 4px;
+    }
+
     .sample {
       background: #111827;
       color: #eaf1ff;
@@ -344,7 +393,7 @@
       .app { padding: 20px 16px 30px; }
       .topbar { align-items: flex-start; flex-direction: column; }
       .grid { grid-template-columns: 1fr; }
-      .form-row, .filters { grid-template-columns: 1fr; }
+      .form-row, .filters, .selected-summary { grid-template-columns: 1fr; }
       .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .message { margin-left: 0; width: 100%; }
     }
@@ -355,7 +404,7 @@
       .stats { grid-template-columns: 1fr; }
       .toolbar, .actions, .backup-row { width: 100%; }
       button { flex: 1; }
-      .report-item, .abnormal-item { align-items: flex-start; flex-direction: column; }
+      .abnormal-item { align-items: flex-start; flex-direction: column; }
     }
   </style>
 </head>
@@ -458,10 +507,19 @@
 
         <section class="panel">
           <div class="panel-head">
-            <h2>记录查询</h2>
+            <h2>报告列表</h2>
+            <span class="chip info" id="selectedReportChip">未选择</span>
           </div>
+          <div class="report-list" id="reportList"></div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <h2>本期报告内容</h2>
+          </div>
+          <div class="selected-summary" id="selectedSummary"></div>
           <div class="filters">
-            <input id="searchInput" type="search" placeholder="搜索项目、缩写、医院" />
+            <input id="searchInput" type="search" placeholder="在本期报告内搜索项目/缩写" />
             <select id="statusFilter">
               <option value="all">全部状态</option>
               <option value="abnormal">只看异常</option>
@@ -503,14 +561,7 @@
 
         <section class="panel">
           <div class="panel-head">
-            <h2>最近报告</h2>
-          </div>
-          <div class="report-list" id="reportList"></div>
-        </section>
-
-        <section class="panel">
-          <div class="panel-head">
-            <h2>异常记录</h2>
+            <h2>本期异常</h2>
           </div>
           <div class="abnormal-list" id="abnormalList"></div>
         </section>
@@ -533,7 +584,8 @@
     const state = {
       reports: [],
       preview: [],
-      parsedMeta: {}
+      parsedMeta: {},
+      selectedReportId: ""
     };
 
     const $ = (id) => document.getElementById(id);
@@ -678,6 +730,23 @@
       return state.reports.flatMap((report) => report.items.map((item) => ({ ...item, reportId: report.id })));
     }
 
+    function sortedReports() {
+      return [...state.reports].sort((a, b) => {
+        const dateCompare = String(b.date).localeCompare(String(a.date));
+        if (dateCompare) return dateCompare;
+        return String(b.createdAt || "").localeCompare(String(a.createdAt || ""));
+      });
+    }
+
+    function selectedReport() {
+      if (!state.reports.length) return null;
+      const existing = state.reports.find((report) => report.id === state.selectedReportId);
+      if (existing) return existing;
+      const first = sortedReports()[0];
+      state.selectedReportId = first.id;
+      return first;
+    }
+
     function renderPreview() {
       $("previewCount").textContent = `${state.preview.length} 项`;
       $("saveBtn").disabled = state.preview.length === 0;
@@ -705,11 +774,13 @@
     }
 
     function renderReports() {
-      const list = [...state.reports].sort((a, b) => String(b.date).localeCompare(String(a.date)));
-      $("reportList").innerHTML = list.length ? list.slice(0, 8).map((report, index) => {
+      const current = selectedReport();
+      const list = sortedReports();
+      $("selectedReportChip").textContent = current ? current.date : "未选择";
+      $("reportList").innerHTML = list.length ? list.map((report) => {
         const abnormalCount = report.items.filter((item) => isAbnormal(item.status)).length;
         return `
-          <article class="report-item ${index === 0 ? "active" : ""}">
+          <article class="report-item ${report.id === state.selectedReportId ? "active" : ""}" data-select-report="${escapeHtml(report.id)}" tabindex="0" role="button">
             <div class="item-main">
               <div class="item-title">${escapeHtml(report.date)}｜${escapeHtml(report.reportType)}</div>
               <div class="item-sub">${escapeHtml(report.hospital)}｜${report.items.length} 项｜${abnormalCount ? abnormalCount + " 项异常" : "全部正常"}</div>
@@ -720,10 +791,25 @@
       }).join("") : `<div class="empty">还没有保存报告</div>`;
     }
 
+    function renderSelectedSummary() {
+      const report = selectedReport();
+      if (!report) {
+        $("selectedSummary").innerHTML = `<div class="empty">还没有选择报告</div>`;
+        return;
+      }
+      const abnormalCount = report.items.filter((item) => isAbnormal(item.status)).length;
+      $("selectedSummary").innerHTML = `
+        <div class="selected-card"><strong>${escapeHtml(report.date)}</strong><span>报告日期</span></div>
+        <div class="selected-card"><strong>${escapeHtml(report.reportType)}</strong><span>报告类型</span></div>
+        <div class="selected-card"><strong>${report.items.length} 项 / ${abnormalCount} 项异常</strong><span>${escapeHtml(report.hospital)}</span></div>
+      `;
+    }
+
     function renderRecords() {
+      const report = selectedReport();
       const query = $("searchInput").value.trim().toLowerCase();
       const status = $("statusFilter").value;
-      let items = allItems();
+      let items = report ? report.items.map((item) => ({ ...item, reportId: report.id })) : [];
 
       if (query) {
         items = items.filter((item) => [item.name, item.code, item.hospital, item.reportType, item.note]
@@ -736,7 +822,7 @@
         items = items.filter((item) => item.status === status);
       }
 
-      items.sort((a, b) => String(b.date).localeCompare(String(a.date)));
+      items.sort((a, b) => String(a.name).localeCompare(String(b.name), "zh-CN"));
       $("recordsBody").innerHTML = items.length ? items.map((item) => `
         <tr>
           <td class="mono">${escapeHtml(item.date)}</td>
@@ -746,14 +832,14 @@
           <td><span class="chip ${statusClass(item.status)}">${escapeHtml(item.status)}</span></td>
           <td>${escapeHtml(item.reportType)}</td>
         </tr>
-      `).join("") : `<tr><td colspan="6"><div class="empty">没有匹配记录</div></td></tr>`;
+      `).join("") : `<tr><td colspan="6"><div class="empty">${report ? "本期报告没有匹配记录" : "先从报告列表选择一次记录"}</div></td></tr>`;
     }
 
     function renderAbnormal() {
-      const abnormal = allItems()
+      const report = selectedReport();
+      const abnormal = (report ? report.items.map((item) => ({ ...item, reportId: report.id })) : [])
         .filter((item) => isAbnormal(item.status))
-        .sort((a, b) => String(b.date).localeCompare(String(a.date)))
-        .slice(0, 8);
+        .sort((a, b) => String(a.name).localeCompare(String(b.name), "zh-CN"));
 
       $("abnormalList").innerHTML = abnormal.length ? abnormal.map((item) => `
         <article class="abnormal-item">
@@ -763,7 +849,7 @@
           </div>
           <span class="chip ${statusClass(item.status)}">${escapeHtml(item.status)}</span>
         </article>
-      `).join("") : `<div class="empty">暂无异常记录</div>`;
+      `).join("") : `<div class="empty">${report ? "本期暂无异常记录" : "先从报告列表选择一次记录"}</div>`;
     }
 
     function renderMetricOptions() {
@@ -840,6 +926,7 @@
       renderPreview();
       renderStats();
       renderReports();
+      renderSelectedSummary();
       renderMetricOptions();
       renderRecords();
       renderAbnormal();
@@ -880,6 +967,7 @@
         items: state.preview.map((item) => ({ ...item, date, hospital, reportType, category: reportType }))
       };
       state.reports.push(report);
+      state.selectedReportId = report.id;
       state.preview = [];
       $("pasteInput").value = "";
       $("saveMessage").textContent = "已保存";
@@ -919,6 +1007,7 @@
           const data = JSON.parse(String(reader.result || ""));
           if (!Array.isArray(data.reports)) throw new Error("Invalid backup");
           state.reports = data.reports;
+          state.selectedReportId = sortedReports()[0]?.id || "";
           saveStore();
           renderAll();
           $("saveMessage").textContent = "备份已导入";
@@ -935,7 +1024,26 @@
       const reportId = target.dataset.deleteReport;
       if (reportId && confirm("确定删除这份报告吗？")) {
         state.reports = state.reports.filter((report) => report.id !== reportId);
+        if (state.selectedReportId === reportId) state.selectedReportId = sortedReports()[0]?.id || "";
         saveStore();
+        renderAll();
+        return;
+      }
+      const selectTarget = target.closest("[data-select-report]");
+      if (selectTarget instanceof HTMLElement) {
+        state.selectedReportId = selectTarget.dataset.selectReport || "";
+        renderAll();
+      }
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) return;
+      const selectTarget = target.closest("[data-select-report]");
+      if (selectTarget instanceof HTMLElement) {
+        event.preventDefault();
+        state.selectedReportId = selectTarget.dataset.selectReport || "";
         renderAll();
       }
     });
@@ -969,6 +1077,7 @@
       if (!state.reports.length) return;
       if (confirm("确定清空全部数据吗？建议先导出备份。")) {
         state.reports = [];
+        state.selectedReportId = "";
         saveStore();
         renderAll();
       }
@@ -978,6 +1087,7 @@
     $("metricSelect").addEventListener("change", renderChart);
 
     loadStore();
+    state.selectedReportId = sortedReports()[0]?.id || "";
     renderAll();
   </script>
 </body>
